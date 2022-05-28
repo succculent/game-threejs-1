@@ -2,43 +2,39 @@ import * as THREE from 'three'
 
 export default class Lights
 {
-    constructor( diameter )
+    constructor( )
     {
-        this.diameter = diameter
+        this.unitZ = new THREE.Vector3( 0, 0, 1 );
     }
-    lights1( scene )
+    lights( scene )
     {
-        //sun
-        var sun = new THREE.DirectionalLight( 0xffffff, 0.9 );
-        sun.position.set( 2 * this.diameter, 5 * this.diameter, 0 );
-        sun.castShadow = true;
-        scene.add( sun );
+        //light plate
+        this.mainLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
+		this.mainLight.position.set( -4, 1, 1 );
+		scene.add( this.mainLight );
 
-        //ambient light
-        var ambient = new THREE.AmbientLight( 0xffffff, 0.3 );
-        scene.add( ambient );
+        //splotlight
+        this.spotLight = new THREE.SpotLight( 0xffffff, 0.7 );
+		this.spotLight.position.set( 0, 0, 50 );
+        this.spotLight.castShadow = true;
+        //Set up shadow properties for the light
+        this.spotLight.shadow.mapSize.width = 2048; // default
+        this.spotLight.shadow.mapSize.height = 2048; // default
+        this.spotLight.shadow.camera.near = 0.5; // default
+        this.spotLight.shadow.camera.far = 500; // default
+		scene.add( this.spotLight );
 
-        //hem
-        var hem = new THREE.HemisphereLight( 'orange', 'purple' );
-        hem.rotateX(Math.PI/2);
-        scene.add( hem );
+        // //hemisphere light
+        // this.colorLight = new THREE.HemisphereLight( 0xffff00, 0x0000ff, 0.8 );
+        // this.colorLight.needsUpdate
+        // scene.add( this.colorLight );
+
+        // //ambient light
+        // var ambient = new THREE.AmbientLight( 0xffffff, 0.02 );
+        // scene.add( ambient );
     }
-    lights3( scene )
-    {       
-        //sun 1
-        var sun1 = new THREE.DirectionalLight( 0xffffff, 0.6 );
-        sun1.position.set( 20, 0, -30 );
-        sun1.castShadow = true;
-        scene.add( sun1 );
-
-        //sun 2
-        var sun2 = new THREE.DirectionalLight( 0xffffff, 0.6 );
-        sun2.position.set( -20, 0, -30 );
-        sun2.castShadow = true;
-        scene.add( sun2 );
-
-        //hem
-        var hem = new THREE.HemisphereLight( 'orange', 'purple', 1.0 );
-        scene.add( hem );
+    tick( elapsedTime )
+    {
+        // this.colorLight.rotateOnAxis(this.unitZ, Math.PI*elapsedTime)
     }
 };

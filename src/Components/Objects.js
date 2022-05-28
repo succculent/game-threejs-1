@@ -13,192 +13,114 @@ export default class Objects
 
     }
     //SCENE 1
-    objects1( scene )
+    objects( scene )
     {
-        var boxGeometry = new THREE.BoxGeometry( 1, 1, 1 );
-        var boxMaterial1 = new THREE.MeshPhongMaterial( );
-        this.cubes = [ ];
-        var color1 = new THREE.Color( 1.0, 0.0, 0.5 ); //hot pink
-        var color2 = new THREE.Color( 0.0, 0.6, 0.2 ); //forest green
-        this.squaresRadius = 25;
-        for( var j = -1 * this.squaresRadius; j < this.squaresRadius; j += 1 ) {
-            for( var i = -1 * this.squaresRadius; i < this.squaresRadius; i += 1 ) {
-                var temp = new THREE.Mesh( boxGeometry , boxMaterial1 );
-                temp.position.set( i, 0, j );
-                var iScale = ( i + this.squaresRadius ) / ( 2 * this.squaresRadius ); //0 to 1 scale for i value
-                var jScale = ( j + this.squaresRadius ) / ( 2 * this.squaresRadius ); //0 to 1 scale for j value
-                var iScaleNorm = iScale / ( jScale );
-                var jScaleNorm = jScale / ( iScale );
-                temp.material.color.r = color1.r * iScaleNorm + color2.r * jScaleNorm;
-                temp.material.color.g = color1.g * ( iScaleNorm/1.5 ) + color2.g * ( jScaleNorm * 1.5 );
-                temp.material.color.b = color1.b * iScaleNorm + color2.b * jScaleNorm;
-                temp.castShadow = true;
-                temp.receiveShadow = true;
-                this.cubes.push( temp );
-            }
+        this.spheres = [];
+        this.sphereState = [];
+        this.spherePositions = [[[-40, 0, -45], [-40, 10, -45]]
+                                ,[[-31, 0, -40], [-31, 10, -40]]
+                                ,[[-22, 0, -20], [-22, 10, -20]]
+                                ,[[-13, 0, -25], [-13, 10, -25]]
+                                ,[[4, 0, -35], [4, 10, -35]]
+                                ,[[15, 0, -25], [15, 10, -25]]
+                                ,[[26, 0, -20], [26, 10, -20]]
+                                ,[[37, 0, -40], [37, 10, -40]]
+                                ,[[48, 0, -45], [48, 10, -45]]
+                                ];
+        for ( let index in this.spherePositions ) {
+            this.createSphere( scene, this.spherePositions[ index ][ 0 ] );
+            console.log( this.spherePositions[ index ][ 0 ][ 1 ] )
         }
-        for ( let index in this.cubes ) { scene.add( this.cubes[ index ] ); };
+        // for ( let index in this.spheres ) this.sphereMeshes.push( this.spheres[ index ].sphereMesh );
+        this.createBackground( scene );
     }
-    tick1( A, deltaTime ) {
-        this.cubes.forEach( ( e, i ) => {
-            e.scale.y = A.data[ i % ( this.squaresRadius * this.squaresRadius ) ] / 10 + 1;
-            e.rotateY( deltaTime * Math.PI/4 * A.data[ i % ( this.squaresRadius * this.squaresRadius ) ] * 0.05 );
+    createBackground( scene )
+    {
+        var backWallGeometry = new THREE.BoxGeometry( 400, 400, 2 );
+        var sideWallGeometry = new THREE.BoxGeometry( 2, 200, 200 );
+        var bottomGeometry = new THREE.BoxGeometry( 400, 10, 400 );
+
+        var wallMaterial = new THREE.MeshPhongMaterial({
+            color: 0xFFFFFF
         });
-    }
-    //SCENE 2
-    objects2( scene, sizes, A )
-    {
-        var planeGeometry = new THREE.PlaneGeometry( sizes.width/2, sizes.height/2 );
-        this.planeMaterial = new THREE.ShaderMaterial({
-            vertexShader: vertexFairy,
-            fragmentShader: fragmentFairy,
-            uniforms: {
-                uTime: {value: 0.0},
-                uResY: {value: sizes.height},
-                uResX: {value: sizes.width},
-                uFFT: { type: "fv1",  value: A.data }
-            },
+        var floorMaterial = new THREE.MeshLambertMaterial({
+            color: 0x888888
         });
-        this.planeMaterial.needsUpdate = true;
-        this.plane = new THREE.Mesh( planeGeometry, this.planeMaterial );
-        this.plane.lookAt(new THREE.Vector3(-0.7, -0.7, -0.7));
-        scene.add( this.plane );
-    }
-    resize2( sizes ) {
-        this.planeMaterial.uniforms.uResY.value = sizes.height;
-        this.planeMaterial.uniforms.uResX.value = sizes.width;
-    }
-    tick2( A, elapsedTime )
-    {
-        this.planeMaterial.uniforms.uTime.value = elapsedTime;
-        this.planeMaterial.uniforms.uFFT.value = A.data;
-    }
-    //SCENE 3
-    objects3( scene )
-    {
-        var boxGeometry = new THREE.OctahedronGeometry( 1, 0 );
-        var boxMaterial = new THREE.MeshPhongMaterial( );
-        this.cubes = [ ];
-        var color = new THREE.Color( 0.0, 0.6, 0.2 ); //forest green
-        for( let i = 0; i < 40; i++ ) {
-            for( let j = 0; j < 20; j++) {
-                let temp = new THREE.Mesh( boxGeometry , boxMaterial );
-                temp.position.set( i + Math.random( ) / 2 - 20, j + Math.random( ) / 2 - 10, Math.random( ) * 15 - 15 );
-                temp.rotateX( Math.random( ) );
-                temp.rotateY( Math.random( ) );
-                temp.rotateZ( Math.random( ) );
-                temp.material.color.r = color.r + ( Math.random( ) / 8) ;
-                temp.material.color.g = color.g + ( Math.random( ) / 2) - 0.4 ;
-                temp.material.color.b = color.b + ( Math.random( ) / 8) ;
-                temp.castShadow = true;
-                temp.receiveShadow = true;
-                this.cubes.push( [ temp, false, temp.position.z, temp.position.x, temp.position.y ] );
-            }
+
+        this.group = new THREE.Group();
+        var obj_ =   [
+                    //  [sideWallGeometry, wallMaterial, [50, 0, 0], [true, true]]  //right
+                    ,[backWallGeometry, wallMaterial, [0, 0, -100], [false, true]] //back
+                    // ,[sideWallGeometry, wallMaterial, [-50, 0, 0], [true, true]]  //left
+                    // ,[bottomGeometry, wallMaterial, [0, -50, 0], [false, true]]   //bottom
+                    // ,[backWallGeometry, wallMaterial, [0, 0, 600], [true, true]] //lights
+                    ];
+
+        for ( let index in obj_ ){
+            var temp = new THREE.Mesh( obj_[index][0] , obj_[index][1] );
+            temp.position.set( obj_[index][2][0], obj_[index][2][1], obj_[index][2][2] );
+            temp.castShadow = obj_[index][3][0];
+            temp.receiveShadow = obj_[index][3][1];
+            this.group.add( temp );
         }
-        for ( let index in this.cubes ) { scene.add( this.cubes[ index ][ 0 ] ); };
+        scene.add( this.group );
     }
-    tick3( A, deltaTime )
+    tick( A, deltaTime )
     {
-        this.cubes.forEach( ( e, i ) => {
-            let dataValue =  A.data[ i % 1024 ];
-            if ( e[ 1 ] ) {
-                this.triggerCube( e );
-            }
-            else if ( dataValue > 120 ) {
-                e[ 0 ].position.z -= 7;
-                e[ 1 ] = true;
-            }
-            e[ 0 ].rotateX( deltaTime * Math.PI/4 * dataValue * 0.1);
-            e[ 0 ].rotateY( deltaTime * Math.PI/6 * dataValue * 0.1);
-            e[ 0 ].rotateZ( deltaTime * Math.PI/2 * dataValue * 0.1);
+        for ( let index in this.spheres ) this.sphereTick( deltaTime, index );
+    }
+    //state -1 disabled
+    //state 0 bottom
+    //state 1 moving up
+    //state 2 moving down
+    createSphere( scene, position )
+    {
+        var sphereGeometry = new THREE.SphereGeometry( 2 );
+        var sphereMaterial = new THREE.MeshPhysicalMaterial({
+            color: 0xFFFFFF
+            ,emissive: 0x091909
+            ,roughness: 0.2
+            ,metalness: 0.902
+            ,reflectivity: 1
         });
+        var sphereMesh = new THREE.Mesh( sphereGeometry, sphereMaterial );
+        sphereMesh.position.set( position[ 0 ], position[ 1 ], position[ 2 ] );
+        sphereMesh.castShadow = true;
+        sphereMesh.recieveShadow = true;
+        this.spheres.push( sphereMesh );
+        this.sphereState.push( 0 );
+        scene.add( sphereMesh );
     }
-    triggerCube( e ) {
-        if( e[ 0 ].position.z >= e[ 2 ] ) {
-            e[ 1 ] = false;
-            return;
-        }
-        e[ 0 ].position.z += 0.01;
-    }
-    //SCENE 4
-    objects4( scene, sizes, A )
+    onClick( obj_ )
     {
-        var planeGeometry = new THREE.PlaneGeometry( sizes.width/2, sizes.height/2 );
-        this.planeMaterial = new THREE.ShaderMaterial({
-            vertexShader: vertexCircles,
-            fragmentShader: fragmentCircles,
-            uniforms: {
-                uTime: {value: 0.0},
-                uResY: {value: sizes.height},
-                uResX: {value: sizes.width},
-            },
-        });
-        this.planeMaterial.needsUpdate = true;
-        this.plane = new THREE.Mesh( planeGeometry, this.planeMaterial );
-        this.plane.lookAt(new THREE.Vector3(-0.7, -0.7, -0.7));
-        scene.add( this.plane );
-    }
-    tick4( A, elapsedTime )
-    {
-        this.planeMaterial.uniforms.uTime.value = elapsedTime;
-    }
-    //SCENE 5
-    createCircle( r, d )
-    {
-        let geometry = new THREE.CircleGeometry( r, d );
-        return geometry;
-    }
-    objects5( scene )
-    {
-        this.colors = [ 0xffff00, 0xff00ff, 0x00ffff, 0xff0000, 0x00ff00, 0x0000ff, 0xffffff];
-        this.cubes = [ ];
-        for ( let i = 0; i < 40; i++ ) {
-            let r = 27 - Math.random()*5;
-            let d = 64 - Math.random()*32;
-            let geometry = this.createCircle( r,  d );
-            let material = new THREE.MeshBasicMaterial( { wireframe: true, wireframeLinewidth: 2.0, color: this.colors[ i % 7 ] } );
-            let temp = new THREE.Mesh( geometry, material );
-            temp.geometry.verticesNeedUpdate = true;
-            temp.geometry.dynamic = true;
-            scene.add( temp );
-            this.cubes.push( [ temp, r, d ] );
+        console.log( obj_.object.position );
+        var objPos = (obj_.object.position.x < 0) ? obj_.object.position.x * -1 : obj_.object.position.x;
+        console.log( objPos );
+        var index = ( objPos + 100 ) % 10;
+        console.log( index );
+        if ( this.sphereState[ index ] == 0 ) {
+            this.sphereState[ index ] = 1;
         }
     }
-    tick5( A, deltaTime )
+    sphereTick( deltaTime, index )
     {
-        this.cubes.forEach( ( e, i ) => {
-            let dataValue =  A.data[ (i * 25) % 1024 ];
-            e[0].rotateX( deltaTime * Math.PI/4 * dataValue * 0.01 );
-            e[0].rotateY( deltaTime * Math.PI/6 * dataValue * 0.01 );
-            e[0].rotateZ( deltaTime * Math.PI/2 * dataValue * 0.01 );
-            let r = (dataValue - e[1] ) * deltaTime;
-            let geometry = this.createCircle( r , e[2] );
-            let material = new THREE.MeshBasicMaterial( { wireframe: true, wireframeLinewidth: 2.0, color: this.colors[ i % 7 ] } );
-            this.cubes[i] = new THREE.Mesh( geometry, material );
-        });
-    }
-    //SCENE 6
-    objects6( scene, sizes, A )
-    {
-        var planeGeometry = new THREE.PlaneGeometry( sizes.width/2, sizes.height/2 );
-        this.planeMaterial = new THREE.ShaderMaterial({
-            vertexShader: vertexVoronoi,
-            fragmentShader: fragmentVoronoi,
-            uniforms: {
-                uTime: {value: 0.0},
-                uResY: {value: sizes.height},
-                uResX: {value: sizes.width},
-                uFFT: { type: "fv1",  value: A.data }
-            },
-        });
-        this.planeMaterial.needsUpdate = true;
-        this.plane = new THREE.Mesh( planeGeometry, this.planeMaterial );
-        this.plane.lookAt(new THREE.Vector3(-0.7, -0.7, -0.7));
-        scene.add( this.plane );
-    }
-    tick6( A, elapsedTime )
-    {
-        this.planeMaterial.uniforms.uTime.value = elapsedTime;
-        this.planeMaterial.uniforms.uFFT.value = A.data;
+        if ( this.sphereState[ index ] == 1 ) {
+            console.log("state:1 index:" + index);
+            var tPosition = this.spherePositions[ index ][ 1 ];
+            if ( this.spheres[ index ].position.y < tPosition[ 1 ] ) this.spheres[ index ].position.y += deltaTime * 50;
+            if ( this.spheres[ index ].position.y >= tPosition[ 1 ] ) {
+                this.spheres[ index ].position.set( tPosition[ 0 ], tPosition[ 1 ], tPosition[ 2 ] );
+                this.sphereState[ index ] = 2;
+            }
+        }
+        else if ( this.sphereState[ index ] == 2 ) {
+            console.log("state:2 index:" + index);
+            var bPosition = this.spherePositions[ index ][ 0 ];
+            if ( this.spheres[ index ].position.y > bPosition[ 1 ] ) this.spheres[ index ].position.y -= deltaTime * 10;
+            if ( this.spheres[ index ].position.y <= bPosition[ 1 ] ) {
+                this.spheres[ index ].position.set( bPosition[ 0 ], bPosition[ 1 ], bPosition[ 2 ] );
+                this.sphereState[ index ] = 0;
+            }
+        }
     }
 };

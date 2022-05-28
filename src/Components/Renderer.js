@@ -6,12 +6,15 @@ export default class Renderer
     {
         this.renderer = new THREE.WebGLRenderer({
             canvas: canvas,
-            alpha: true
+            alpha: true,
+            antialias: true
         });
         this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         this.renderer.setSize( sizes.width, sizes.height );
         this.renderer.setPixelRatio( Math.min( window.devicePixelRatio, 2 )); //reconsider for performance issues
         this.renderer.setClearAlpha(0x000000, 0);
+        // this.renderer.xr.enabled = true;
     }
     resize( sizes )
     {

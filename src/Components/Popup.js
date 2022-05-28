@@ -1,6 +1,10 @@
 import { update } from 'lodash'
 import * as THREE from 'three'
 
+//can be used to create UI
+
+//same concept can be used to do crazy menu animations with a shader attached
+
 export default class Popup
 {
     constructor( title, artist )
